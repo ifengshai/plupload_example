@@ -9,7 +9,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  */
-
+session_start();
 #!! IMPORTANT: 
 #!! this file is just an example, it doesn't incorporate any security checks and 
 #!! is not recommended to be used in production environment as it is. Be sure to 
@@ -59,9 +59,21 @@ if (isset($_REQUEST["name"])) {
 } else {
 	$fileName = uniqid("file_");
 }
-
+	//创建对应类型文件夹，下面是根据类型存放文件,加日期
+	$two_path=end(explode(".",$fileName));//文件后缀
+	$date_path=date('Ymd',time());//日期
+	$targetDir=$targetDir . DIRECTORY_SEPARATOR .$two_path;
+	$targetDir=$targetDir . DIRECTORY_SEPARATOR . $date_path;
+	
+	if (!file_exists($targetDir)) {
+		@mkdir($targetDir,0777,true);
+	}
+$fileName = iconv('UTF-8', 'GB2312', $fileName);//转编码
 $filePath = $targetDir . DIRECTORY_SEPARATOR . $fileName;
 
+//创建session
+$_SESSION['upload_file_name'][]=$fileName;
+$_SESSION['upload_file_path'][]=$filePath;
 // Chunking might be enabled
 $chunk = isset($_REQUEST["chunk"]) ? intval($_REQUEST["chunk"]) : 0;
 $chunks = isset($_REQUEST["chunks"]) ? intval($_REQUEST["chunks"]) : 0;

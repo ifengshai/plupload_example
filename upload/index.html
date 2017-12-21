@@ -23,9 +23,11 @@
 	<div id="example">
 		<p>This example shows you how to use the jQuery UI widget.</p>
 		<form id="form" method="post" action="test.php">
+		
 			<div id="uploader">
 				<p>Your browser doesn't have Flash, Silverlight or HTML5 support.</p>
 			</div>
+			
 				<input type="submit" value="Submit" />
 		</form>
 	</div>
@@ -38,14 +40,30 @@
 <script type="text/javascript">
 	// Initialize the widget when the DOM is ready
 	$(function() {
+		//触发文件选择对话框的按钮，为那个元素id
 		$("#uploader").plupload({
-			// General settings
 			runtimes : 'html5,flash,silverlight,html4',
+			
+			//服务器端的上传页面地址
 			url : "plupload/upload.php",
-
+			
 			// 最大上传文件大小
 			max_file_size : '777mb',
-
+			
+			//只能选择一个文件
+			//multi_selection:false,
+			
+			//是否重命名
+			rename: true,
+			unique_names:true,
+			
+			// 设置文件类型限制
+			filters : [
+				{title : "Image files", extensions : "jpg,gif,png"},
+				{title : "Zip files", extensions : "zip,avi,rar"},
+				
+			],
+			
 			chunk_size: '1mb',
 
 			// Resize images on clientside if we can
@@ -56,19 +74,8 @@
 				//crop: true // 是否裁剪图片
 			},
 
-			// Specify what files to browse for
-			filters : [
-				{title : "Image files", extensions : "jpg,gif,png"},
-				{title : "Zip files", extensions : "zip,avi"},
-				
-			],
-			
-			// Rename files by clicking on their titles
-			rename: true,
-			
 			// Sort files
 			sortable: true,
-			unique_names:true,
 			// Enable ability to drag'n'drop files onto the widget (currently only HTML5 supports that)
 			dragdrop: true,
 
@@ -78,14 +85,16 @@
 				thumbs: true, // Show thumbs
 				active: 'thumbs'
 			},
-
-			// Flash settings
+			
+			//swf文件，当需要使用swf方式进行上传时需要配置该参数
 			flash_swf_url : 'plupload/js/Moxie.swf',
-		
-			// Silverlight settings
+			
+			//silverlight文件,需要使用silverlight方式进行上传时需要配置该参数
 			silverlight_xap_url : 'plupload/js/Moxie.xap'
 		});
+		
 	});
+	
 (function($) {
 var langMap = {
 	'javascript': 'js',

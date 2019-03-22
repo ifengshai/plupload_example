@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+<title>Plupload - Custom example</title>
+<style type="text/css">
+.clear{
+	clear:both;
+	}
+</style>
+<!-- 上传js加载begin -->
+<script type="text/javascript" src="js/plupload.full.min.js"></script>
+<script type="text/javascript" src="js/jquery.js"></script>
+<!-- 上传js加载end -->
+
+</head>
+<body style="font: 13px Verdana; background: #eee; color: #333">
+<h1>Custom example</h1>
+<p>Shows you how to use the core plupload API.</p>
+
+
+<form id="form" method="post" action="">
+	<!-- 上传代码begin -->
+	<div>
+		<div id="filelist" style="width:600px;">Your browser doesn't have Flash, Silverlight or HTML5 support.</div>
+		<br />
+		<div id="container" >
+			<a id="pickfiles" href="javascript:;">[Select files]</a> 
+			<a id="uploadfiles" href="javascript:;" style="display:none;">[Upload files]</a>
+		</div>
+		<div class="clear"></div>
+	</div>
+	<div class="clear"></div>
+	<!-- 上传代码end -->
+</form>
+
+<hr/>
+<script type="text/javascript">
+var uploader = new plupload.Uploader({
+	runtimes : 'html5,flash,silverlight,html4',
+	browse_button : 'pickfiles', // you can pass an id...
+	container: document.getElementById('container'), // ... or DOM Element itself
+	url : '/plupload_example/examples/upload.php',//上传地址
+	flash_swf_url : 'js/Moxie.swf',
+	silverlight_xap_url : 'js/Moxie.xap',
+	
+	filters : {
+		//设置上传大小，文件类型
+		max_file_size : '10mb',
+		mime_types: [
+			{title : "Image files", extensions : "jpg,gif,png"},
+			{title : "Zip files", extensions : "zip"}
+		]
+    },
+    
+    //是否重命名
+    //rename: true,
+    //unique_names:true,
+
+    //只能选择一个文件
+    //multi_selection:false,
+
+	init: {
+		PostInit: function() {
+			document.getElementById('filelist').innerHTML = '';
+			document.getElementById('uploadfiles').onclick = function() {
+				uploader.start();
+				return false;
+			};
+		},
+
+        //添加文件激活事件
+		FilesAdded: function(up, files) {
+			plupload.each(files, function(file) {
+				document.getElementById('filelist').innerHTML += '<div id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></div>';
+            });
+            uploader.start();//开启上传
+		},
+
+        //所有文件上传完成之后激活事件
+        UploadComplete: function(up, file) {
+            //增加成功记录
+            var showImage='';
+            for(var i in file){
+                showImage='<div id="' + file.id + '">'+file[i].name+'</div>';
+            }
+			
+            document.getElementById('filelist').innerHTML+=showImage;
+        },
+		
+		//上传一个文件完成激活事件
+		FileUploaded: function(up, file, response){
+		
+			console.log(response);//response里面为有文件目标保存路径
+		},
+
+        //上传过程中激活事件
+		UploadProgress: function(up, file) {
+			document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
+		},
+
+        //上传失败激活事件
+		Error: function(up, err) {
+			document.getElementById('container').appendChild(document.createTextNode("\nError #" + err.code + ": " + err.message));
+		}
+	}
+});
+
+uploader.init();
+
+</script>
+</body>
+</html>

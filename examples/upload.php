@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 // Settings
 //$targetDir = ini_get("upload_tmp_dir") . DIRECTORY_SEPARATOR . "plupload";
 //$targetDir = 'uploads';
-$targetDir = '../../uploadfiles';
+$targetDir = '../uploadfiles';
 $cleanupTargetDir = true; // Remove old files
 $maxFileAge = 5 * 3600; // Temp file age in seconds
 
@@ -60,12 +60,14 @@ if (isset($_REQUEST["name"])) {
 	$fileName = uniqid("file_");
 }
 
+$file_name_arr = explode(".",$fileName);
+$file_ext = end($file_name_arr);//文件后缀
+
 $filePath = $targetDir . DIRECTORY_SEPARATOR . $fileName;
 
 // Chunking might be enabled
 $chunk = isset($_REQUEST["chunk"]) ? intval($_REQUEST["chunk"]) : 0;
 $chunks = isset($_REQUEST["chunks"]) ? intval($_REQUEST["chunks"]) : 0;
-
 
 // Remove old temp files	
 if ($cleanupTargetDir) {
@@ -89,6 +91,30 @@ if ($cleanupTargetDir) {
 	closedir($dir);
 }	
 
+//传过来的是utf-8,但是写的时候用GB2312。这里转成GB2312
+$filePath = iconv('UTF-8', 'GB2312', $filePath);
+$fileName = iconv('UTF-8', 'GB2312', $fileName);
+
+//解决重命名问题
+if(is_file($filePath)){
+	$old_file_name_arr = explode(".",$fileName);
+	array_pop($old_file_name_arr);
+	$old_fileName = implode('',$old_file_name_arr);
+	$i = 1;
+	while(true){
+		$new_fileName = $old_fileName . '(' . $i .')';
+		$temp_filePath = str_ireplace($old_fileName,$new_fileName,$filePath);
+		$temp_fileName = $new_fileName . '.' . $file_ext;
+		if(!is_file($temp_filePath)){ break; }
+		$i++;
+	}
+	$fileName = $temp_fileName;
+	$filePath = $temp_filePath;
+}
+
+//这里是utf-8中文,用来做返回值
+$encode_filepath = iconv('GB2312', 'UTF-8', $filePath);
+$encode_filename = iconv('GB2312', 'UTF-8', $fileName);
 
 // Open temp file
 if (!$out = @fopen("{$filePath}.part", $chunks ? "ab" : "wb")) {
@@ -124,4 +150,11 @@ if (!$chunks || $chunk == $chunks - 1) {
 }
 
 // Return Success JSON-RPC response
-die('{"jsonrpc" : "2.0", "result" : null, "id" : "id"}');
+//die('{"jsonrpc" : "2.0", "result" : null, "id" : "id"}');
+$return_data = array(
+	'file_url' => $encode_filepath,
+	'file_size' => $_FILES['file']['size'],
+	'file_name' => $encode_filename,
+	'file_ext' => $file_ext,
+);
+die(json_encode(array('code'=>200,'data'=>$return_data,'message'=>'success')));
